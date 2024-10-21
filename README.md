@@ -1,2 +1,1 @@
-# kopilot
-open source copilot for kotlin
+# Code Complition test project
