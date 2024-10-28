@@ -65,7 +65,7 @@ class BaseDataSampler:
 
     def sample(
             self, 
-            num_files: int, 
+            size: int, 
             replace: bool = True, 
             strategy: str = None, 
             strategy_args: List = [], 
@@ -76,7 +76,7 @@ class BaseDataSampler:
         Samples data from the files using a specified strategy.
 
         Args:
-            num_files (int): Number of files to sample.
+            size (int): Number of files to sample.
             replace (bool): Whether to sample with replacement. Defaults to True.
             strategy (str): The strategy to use for sampling.
             strategy_args (List): Arguments for the strategy function.
@@ -86,10 +86,10 @@ class BaseDataSampler:
         Returns:
             Union[pd.DataFrame, Tuple[pd.DataFrame, List[str]]]: The sampled dataset and optionally the failed files.
         """
-        chosen_files = np.random.choice(self.files, num_files, replace=replace)
+        chosen_files = np.random.choice(self.files, size, replace=replace)
 
         dataset = {
-            'filename': chosen_files,
+            'filename': [],
             'prefix': [],
             'middle': [],
             'suffix': [],
@@ -108,6 +108,7 @@ class BaseDataSampler:
             success, prefix, middle, suffix, meta = getattr(self, strategy)(lines, *strategy_args, **strategy_kwargs)            
             
             if success:
+                dataset['filename'].append(filename)
                 dataset['prefix'].append(prefix)
                 dataset['middle'].append(middle)
                 dataset['suffix'].append(suffix)

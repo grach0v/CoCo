@@ -1,0 +1,26 @@
+generate_data:
+  path_load: null
+  path_save: '../data/prepared.parquet'
+  dir_load: '../data/SDF-JEPA-main'
+  extension: '.py'
+  filter_regex: '^(?!\s*(import\b|#)).*\S.*$'
+  min_lines: 15
+
+  max_prefix: 300
+  max_middle: 300
+  max_suffix: 300
+  splitters: ['.', ',', '(', ')', r'\S*']
+
+  datasets:
+    - size: 20
+      strategy: 'finish_lines'
+      strategy_kwargs:
+        max_tries: 5
+        meta: 'finish_lines'
+
+    - size: 20
+      strategy: 'finish_words'
+      strategy_kwargs:
+        max_tries: 5 
+        meta: 'finish_words'
+

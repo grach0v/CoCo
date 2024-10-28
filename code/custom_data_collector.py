@@ -25,11 +25,12 @@ class SimpleSplitDataSampler(BaseDataSampler):
         super().__init__(files, max_prefix, max_middle, max_suffix)
         self.pattern = '|'.join(map(re.escape, splitters))
 
-    def finish_line(
+    def finish_lines(
             self, 
             lines: List[str], 
             max_tries: int = 3, 
-            max_lines_pred: int = 3
+            max_lines_pred: int = 3,
+            meta: Union[str, None] = None,
         ) -> Tuple[bool, Union[str, None], Union[str, None], Union[str, None], Union[str, None]]:
         """
         Attempts to finish a line by finding a match for the pattern within the given lines.
@@ -47,33 +48,35 @@ class SimpleSplitDataSampler(BaseDataSampler):
             cursor_line = np.random.randint(len(lines))
             matches = [match.start() for match in re.finditer(self.pattern, lines[cursor_line])]
 
-            if len(matches) == 0:
+            if len(matches) == 0 or lines[cursor_line].strip()[0] == '#':
                 continue
 
             cursor_pos = np.random.choice(matches, 1)[0]
             lines_pred = np.random.randint(min(max_lines_pred, len(lines) - cursor_line))
 
-            prefix = ''.join(lines[:cursor_line + 1]) + lines[cursor_line][:cursor_pos]
+            prefix = ''.join(lines[:cursor_line]) + lines[cursor_line][:cursor_pos]
             middle = lines[cursor_line][cursor_pos:] + lines[cursor_line + lines_pred]
             suffix = ''.join(lines[cursor_line + lines_pred + 1:])
-
-            if len(middle) <= self.max_middle:
-                break
 
             prefix = prefix[-self.max_prefix:]
             suffix = suffix[:self.max_suffix]
 
+            if len(middle) <= self.max_middle:
+                break
+
         else:
             return False, None, None, None, None
         
-        return True, prefix, middle, suffix, 'finish_line'
+        return True, prefix, middle, suffix, meta
     
     def finish_words(
             self, 
             lines: List[str], 
             max_tries: int = 3, 
             max_letters_word: int = 2, 
-            max_words_pred: int = 20
+            max_words_pred: int = 20,
+            min_word_length: int = 5,
+            meta: Union[str, None] = None,
         ) -> Tuple[bool, Union[str, None], Union[str, None], Union[str, None], Union[str, None]]:
         """
         Attempts to finish words by finding matches for the pattern within the given lines.
@@ -89,16 +92,19 @@ class SimpleSplitDataSampler(BaseDataSampler):
             A tuple containing a success flag, the prefix, the middle part, the suffix, and a label.
         """
         file = ''.join(lines)
-        matches = [match.start() for match in re.finditer(self.pattern, file)]
+        matches = [match.start() for match in re.finditer(self.pattern + '|\n', file)]
+        match_length = [next - prev for prev, next in zip(matches, matches[1:])]
+        matches = [m for m, l in zip(matches, match_length) if l > min_word_length]
+
         matches.append(len(file))
            
         for _ in range(max_tries):
         
             match_i = np.random.randint(len(matches) - 1)
             max_shift = min(max_letters_word, matches[match_i + 1] - matches[match_i])
-            shift = np.random.randint(max_shift)
+            shift = np.random.randint(1, max_shift + 1)
 
-            cursor_pos = match_i + shift
+            cursor_pos = matches[match_i] + shift
             match_end = np.random.randint(match_i + 1, match_i + max_words_pred + 1)
             match_end = min(match_end, len(matches) - 1)
             cursor_end = matches[match_end]
@@ -107,13 +113,12 @@ class SimpleSplitDataSampler(BaseDataSampler):
             middle = file[cursor_pos: cursor_end]
             suffix = file[cursor_end:]
 
-            if len(middle) <= self.max_middle:
-                break
-
             prefix = prefix[-self.max_prefix:]
             suffix = suffix[:self.max_suffix]
 
+            if len(middle) <= self.max_middle:
+                break
         else:
             return False, None, None, None, None
         
-        return True, prefix, middle, suffix, 'finish_words'
+        return True, prefix, middle, suffix, meta
