@@ -24,3 +24,7 @@ generate_data:
         max_tries: 5 
         meta: 'finish_words'
 
+model:
+  checkpoint: 'bigcode/tiny_starcoder_py'
+  device: 'cuda'
+  max_new_tokens: 30

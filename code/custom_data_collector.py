@@ -55,7 +55,12 @@ class SimpleSplitDataSampler(BaseDataSampler):
             lines_pred = np.random.randint(min(max_lines_pred, len(lines) - cursor_line))
 
             prefix = ''.join(lines[:cursor_line]) + lines[cursor_line][:cursor_pos]
-            middle = lines[cursor_line][cursor_pos:] + lines[cursor_line + lines_pred]
+
+            if lines_pred > 0:
+                middle = lines[cursor_line][cursor_pos:] + ''.join(lines[cursor_line + 1: cursor_line + lines_pred + 1])
+            else:
+                middle = lines[cursor_line][cursor_pos:]
+
             suffix = ''.join(lines[cursor_line + lines_pred + 1:])
 
             prefix = prefix[-self.max_prefix:]
