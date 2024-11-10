@@ -19,7 +19,7 @@ The steps include:
 
 To generate data, run the following command:
 ```bash
-python code/generater.py configs/simple_sampler.yaml
+python code/generator.py configs/simple_sampler.yaml
 ```
 
 ## Data Analysis
