@@ -8,7 +8,7 @@ Some of the source code is purposely overcomplicated to demonstrate the ability 
 This project involves generating code data, performing analysis on it, and drawing conclusions for future work.
 
 ## Data Generation
-The data generation process is handled by the `generater.py` script, 
+The data generation process is handled by the `generator.py` script, 
 which reads configurations from the `simple_sampler.yaml` file.  
 The steps include:
 - Collecting Source Code Files: It scans a specified directory for source code files with a particular extension (e.g., .py files).
